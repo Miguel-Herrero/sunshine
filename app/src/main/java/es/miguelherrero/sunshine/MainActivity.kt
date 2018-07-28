@@ -4,6 +4,8 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import es.miguelherrero.sunshine.models.ForecastModel
@@ -16,6 +18,8 @@ import retrofit2.Response
 class MainActivity : AppCompatActivity() {
 
     var mWeatherDataTextView: TextView? = null
+    var mErrorMessageTextView: TextView? = null
+    var mLoadingIndicator: ProgressBar? = null
     val mTAG = "MainActivityMIO"
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -23,6 +27,10 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         mWeatherDataTextView = findViewById(R.id.tv_weather_data)
+        mErrorMessageTextView = findViewById(R.id.tv_error_message_display)
+        mLoadingIndicator = findViewById(R.id.pb_loading_indicator)
+
+        mLoadingIndicator?.visibility = View.VISIBLE
 
         fetchForecast()
     }
@@ -39,6 +47,7 @@ class MainActivity : AppCompatActivity() {
         val id = item?.itemId
 
         if (id == R.id.action_refresh) {
+            mLoadingIndicator?.visibility = View.VISIBLE
             mWeatherDataTextView?.text = ""
             fetchForecast()
         }
@@ -68,11 +77,14 @@ class MainActivity : AppCompatActivity() {
 
         weatherService.getForecast(3117735, OpenWeatherAPIService.mAppID).enqueue(object : Callback<ForecastModel> {
             override fun onFailure(call: Call<ForecastModel>?, error: Throwable?) {
-                Log.e(mTAG, "Error ${error?.message}")
+                mLoadingIndicator?.visibility = View.INVISIBLE
+                showErrorMessage()
             }
 
             override fun onResponse(call: Call<ForecastModel>?, response: Response<ForecastModel>?) {
+                mLoadingIndicator?.visibility = View.INVISIBLE
                 if (response?.isSuccessful!!) {
+                    showJsonDataView()
                     val data = response.body()
 
                     for (day in data?.list!!) {
@@ -81,5 +93,15 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         })
+    }
+
+    private fun showJsonDataView() {
+        mErrorMessageTextView?.visibility = View.INVISIBLE
+        mWeatherDataTextView?.visibility = View.VISIBLE
+    }
+
+    private fun showErrorMessage() {
+        mErrorMessageTextView?.visibility = View.VISIBLE
+        mWeatherDataTextView?.visibility = View.INVISIBLE
     }
 }
