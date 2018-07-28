@@ -3,6 +3,7 @@ package es.miguelherrero.sunshine
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
+import android.view.MenuItem
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import es.miguelherrero.sunshine.models.ForecastModel
@@ -27,7 +28,20 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        /* Use AppCompatActivity's method getMenuInflater to get a handle on the menu inflater */
+        /* Use the inflater's inflate method to inflate our menu layout to this menu */
         menuInflater.inflate(R.menu.main, menu)
+        /* Return true so that the menu is displayed in the Toolbar */
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        val id = item?.itemId
+
+        if (id == R.id.action_refresh) {
+            mWeatherDataTextView?.text = ""
+            fetchForecast()
+        }
         return true
     }
 
