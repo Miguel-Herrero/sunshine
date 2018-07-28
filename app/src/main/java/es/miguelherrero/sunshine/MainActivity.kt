@@ -1,17 +1,16 @@
 package es.miguelherrero.sunshine
 
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import es.miguelherrero.sunshine.models.ForecastModel
-import es.miguelherrero.sunshine.models.WeatherModel
 import es.miguelherrero.sunshine.utilities.OpenWeatherAPIService
 import retrofit2.Call
 import retrofit2.Callback
@@ -19,9 +18,9 @@ import retrofit2.Response
 
 class MainActivity : AppCompatActivity() {
 
-    var mErrorMessageTextView: TextView? = null
+
+    private var mErrorMessageTextView: TextView? = null
     var mLoadingIndicator: ProgressBar? = null
-    val mTAG = "MainActivityMIO"
     var mAdapter: ForecastAdapter? = null
     private var mWeatherList: RecyclerView? = null
 
@@ -35,12 +34,15 @@ class MainActivity : AppCompatActivity() {
 
         mLoadingIndicator?.visibility = View.VISIBLE
 
+        /*
+         * Pass as a parameter an on-click handler that we've defined to make it easy
+         * for an Activity to interface with our RecyclerView
+         */
+        mAdapter = ForecastAdapter { weatherForDay: String -> itemClicked(weatherForDay) }
+
         mWeatherList?.layoutManager = LinearLayoutManager(this)
         mWeatherList?.hasFixedSize()
         mWeatherList?.visibility = View.INVISIBLE
-
-        mAdapter = ForecastAdapter()
-
         mWeatherList?.adapter = mAdapter
 
         fetchForecast()
@@ -64,6 +66,7 @@ class MainActivity : AppCompatActivity() {
         return true
     }
 
+    /*
     @Suppress("unused")
     private fun fetchWeatherData() {
         val weatherService = OpenWeatherAPIService.create()
@@ -80,7 +83,7 @@ class MainActivity : AppCompatActivity() {
                 Log.e(mTAG, "Error ${error?.message}")
             }
         })
-    }
+    }*/
 
     private fun fetchForecast() {
         val weatherService = OpenWeatherAPIService.create()
@@ -111,5 +114,14 @@ class MainActivity : AppCompatActivity() {
     private fun showErrorMessage() {
         mErrorMessageTextView?.visibility = View.VISIBLE
         mWeatherList?.visibility = View.INVISIBLE
+    }
+
+    /**
+     * This method is executed when an item is clicked.
+     *
+     * @param weatherForDay The weather for the day that was clicked
+     */
+    private fun itemClicked(weatherForDay: String) {
+        Toast.makeText(this, weatherForDay, Toast.LENGTH_LONG).show()
     }
 }
