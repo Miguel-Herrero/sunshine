@@ -8,6 +8,8 @@ import android.view.View
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import es.miguelherrero.sunshine.models.ForecastModel
 import es.miguelherrero.sunshine.models.WeatherModel
 import es.miguelherrero.sunshine.utilities.OpenWeatherAPIService
@@ -17,20 +19,29 @@ import retrofit2.Response
 
 class MainActivity : AppCompatActivity() {
 
-    var mWeatherDataTextView: TextView? = null
     var mErrorMessageTextView: TextView? = null
     var mLoadingIndicator: ProgressBar? = null
     val mTAG = "MainActivityMIO"
+    var mAdapter: ForecastAdapter? = null
+    private var mWeatherList: RecyclerView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        mWeatherDataTextView = findViewById(R.id.tv_weather_data)
         mErrorMessageTextView = findViewById(R.id.tv_error_message_display)
         mLoadingIndicator = findViewById(R.id.pb_loading_indicator)
+        mWeatherList = findViewById(R.id.rv_weathers)
 
         mLoadingIndicator?.visibility = View.VISIBLE
+
+        mWeatherList?.layoutManager = LinearLayoutManager(this)
+        mWeatherList?.hasFixedSize()
+        mWeatherList?.visibility = View.INVISIBLE
+
+        mAdapter = ForecastAdapter()
+
+        mWeatherList?.adapter = mAdapter
 
         fetchForecast()
     }
@@ -48,7 +59,6 @@ class MainActivity : AppCompatActivity() {
 
         if (id == R.id.action_refresh) {
             mLoadingIndicator?.visibility = View.VISIBLE
-            mWeatherDataTextView?.text = ""
             fetchForecast()
         }
         return true
@@ -87,9 +97,7 @@ class MainActivity : AppCompatActivity() {
                     showJsonDataView()
                     val data = response.body()
 
-                    for (day in data?.list!!) {
-                        mWeatherDataTextView?.append("${day.dt_txt} – ${day.weather[0].description} – ${day.main.temp_max} / ${day.main.temp_min}\n\n")
-                    }
+                    mAdapter?.setForecastData(data?.list!!)
                 }
             }
         })
@@ -97,11 +105,11 @@ class MainActivity : AppCompatActivity() {
 
     private fun showJsonDataView() {
         mErrorMessageTextView?.visibility = View.INVISIBLE
-        mWeatherDataTextView?.visibility = View.VISIBLE
+        mWeatherList?.visibility = View.VISIBLE
     }
 
     private fun showErrorMessage() {
         mErrorMessageTextView?.visibility = View.VISIBLE
-        mWeatherDataTextView?.visibility = View.INVISIBLE
+        mWeatherList?.visibility = View.INVISIBLE
     }
 }
