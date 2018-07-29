@@ -1,12 +1,12 @@
 package es.miguelherrero.sunshine
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.ProgressBar
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -18,6 +18,14 @@ import retrofit2.Response
 
 class MainActivity : AppCompatActivity() {
 
+    companion object {
+        // Class name for Log tag
+        private val LOG_TAG = MainActivity::class.java.simpleName
+        // Unique tag required for the intent extra
+        const val EXTRA_MESSAGE = "EXTRA_MESSAGE"
+        // Unique tag for the intent reply
+        const val TEXT_REQUEST = 1
+    }
 
     private var mErrorMessageTextView: TextView? = null
     var mLoadingIndicator: ProgressBar? = null
@@ -122,6 +130,8 @@ class MainActivity : AppCompatActivity() {
      * @param weatherForDay The weather for the day that was clicked
      */
     private fun itemClicked(weatherForDay: String) {
-        Toast.makeText(this, weatherForDay, Toast.LENGTH_LONG).show()
+        val intent = Intent(this, DetailActivity::class.java)
+        intent.putExtra(Intent.EXTRA_TEXT, weatherForDay)
+        startActivity(intent)
     }
 }
