@@ -1,7 +1,9 @@
 package es.miguelherrero.sunshine
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -71,6 +73,11 @@ class MainActivity : AppCompatActivity() {
             mLoadingIndicator?.visibility = View.VISIBLE
             fetchForecast()
         }
+
+        if (id == R.id.action_map) {
+            openLocationInMap()
+        }
+
         return true
     }
 
@@ -133,5 +140,20 @@ class MainActivity : AppCompatActivity() {
         val intent = Intent(this, DetailActivity::class.java)
         intent.putExtra(Intent.EXTRA_TEXT, weatherForDay)
         startActivity(intent)
+    }
+
+    private fun openLocationInMap() {
+        val addressString = "1600 Ampitheatre Parkway, CA"
+        val geoLocation: Uri = Uri.parse("geo:0,0?q=$addressString")
+
+        val intent = Intent(Intent.ACTION_VIEW)
+        intent.data = geoLocation
+
+        if (intent.resolveActivity(packageManager) != null) {
+            startActivity(intent)
+        } else {
+            Log.d(LOG_TAG, "Couldn't call " + geoLocation.toString()
+                    + ", no receiving apps installed!")
+        }
     }
 }
