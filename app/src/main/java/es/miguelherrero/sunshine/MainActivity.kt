@@ -5,20 +5,27 @@ import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
-import android.view.MenuItem
-import android.view.View
-import android.widget.ProgressBar
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import es.miguelherrero.sunshine.models.ForecastModel
-import es.miguelherrero.sunshine.utilities.OpenWeatherAPIService
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+import es.miguelherrero.sunshine.Fragments.ForecastFragment
+import es.miguelherrero.sunshine.Fragments.WeatherListFragment
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(),
+        WeatherListFragment.OnFragmentInteractionListener,
+        ForecastFragment.OnFragmentInteractionListener {
+    override fun onFragmentInteraction(uri: Uri) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun onFragmentInteraction(weatherForDay: String) {
+        Log.d(LOG_TAG, "Item was clicked: $weatherForDay")
+        /*val intent = Intent(this, DetailActivity::class.java)
+        intent.putExtra(Intent.EXTRA_TEXT, weatherForDay)
+        startActivity(intent)*/
+        supportFragmentManager
+                .beginTransaction()
+                .replace(R.id.container, ForecastFragment.newInstance(weatherForDay))
+                .commit()
+    }
 
     companion object {
         // Class name for Log tag
@@ -29,33 +36,18 @@ class MainActivity : AppCompatActivity() {
         const val TEXT_REQUEST = 1
     }
 
-    private var mErrorMessageTextView: TextView? = null
-    var mLoadingIndicator: ProgressBar? = null
-    var mAdapter: ForecastAdapter? = null
-    private var mWeatherList: RecyclerView? = null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        mErrorMessageTextView = findViewById(R.id.tv_error_message_display)
-        mLoadingIndicator = findViewById(R.id.pb_loading_indicator)
-        mWeatherList = findViewById(R.id.rv_weathers)
-
-        mLoadingIndicator?.visibility = View.VISIBLE
-
-        /*
-         * Pass as a parameter an on-click handler that we've defined to make it easy
-         * for an Activity to interface with our RecyclerView
-         */
-        mAdapter = ForecastAdapter { weatherForDay: String -> itemClicked(weatherForDay) }
-
-        mWeatherList?.layoutManager = LinearLayoutManager(this)
-        mWeatherList?.hasFixedSize()
-        mWeatherList?.visibility = View.INVISIBLE
-        mWeatherList?.adapter = mAdapter
-
-        fetchForecast()
+        if (savedInstanceState == null) {
+            supportFragmentManager
+                    .beginTransaction()
+                    .replace(R.id.container, WeatherListFragment.newInstance())
+                    .commit()
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -65,7 +57,7 @@ class MainActivity : AppCompatActivity() {
         /* Return true so that the menu is displayed in the Toolbar */
         return true
     }
-
+/*
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         val id = item?.itemId
 
@@ -79,7 +71,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         return true
-    }
+    }*/
 
     /*
     @Suppress("unused")
@@ -99,48 +91,6 @@ class MainActivity : AppCompatActivity() {
             }
         })
     }*/
-
-    private fun fetchForecast() {
-        val weatherService = OpenWeatherAPIService.create()
-
-        weatherService.getForecast(3117735, OpenWeatherAPIService.mAppID).enqueue(object : Callback<ForecastModel> {
-            override fun onFailure(call: Call<ForecastModel>?, error: Throwable?) {
-                mLoadingIndicator?.visibility = View.INVISIBLE
-                showErrorMessage()
-            }
-
-            override fun onResponse(call: Call<ForecastModel>?, response: Response<ForecastModel>?) {
-                mLoadingIndicator?.visibility = View.INVISIBLE
-                if (response?.isSuccessful!!) {
-                    showJsonDataView()
-                    val data = response.body()
-
-                    mAdapter?.setForecastData(data?.list!!)
-                }
-            }
-        })
-    }
-
-    private fun showJsonDataView() {
-        mErrorMessageTextView?.visibility = View.INVISIBLE
-        mWeatherList?.visibility = View.VISIBLE
-    }
-
-    private fun showErrorMessage() {
-        mErrorMessageTextView?.visibility = View.VISIBLE
-        mWeatherList?.visibility = View.INVISIBLE
-    }
-
-    /**
-     * This method is executed when an item is clicked.
-     *
-     * @param weatherForDay The weather for the day that was clicked
-     */
-    private fun itemClicked(weatherForDay: String) {
-        val intent = Intent(this, DetailActivity::class.java)
-        intent.putExtra(Intent.EXTRA_TEXT, weatherForDay)
-        startActivity(intent)
-    }
 
     private fun openLocationInMap() {
         val addressString = "1600 Ampitheatre Parkway, CA"
